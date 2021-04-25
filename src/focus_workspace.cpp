@@ -8,11 +8,12 @@
 #include <charconv>
 #include <algorithm>
 #include <i3-ipc++/i3_ipc.hpp>
-#include <i3-ipc++/i3_ipc_bad_message.hpp>
 #include <fmt/core.h>
 
 #include "workspaces.hpp"
 #include "outputs.hpp"
+
+#define ENABLE_DEBUG
 
 int main(int argc, char * argv[])
 {
@@ -40,19 +41,22 @@ int main(int argc, char * argv[])
     fmt::print(stderr, "Other:   {}\n", other);
 #endif
 
-    if (arg == other) {
-#ifdef ENABLE_DEBUG
-        fmt::print(stderr, "Swapping workspaces {} and {}\n", current, other);
-#endif
-        i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", arg));
-    }
-    else if (arg == current) {
+    if (arg == current) {
 #ifdef ENABLE_DEBUG
         fmt::print(stderr, "Focusing from workspace {} using back and forth\n", arg);
 #endif
-        i3.execute_commands(fmt::format("workspace {}", arg));
+        i3.execute_commands("workspace back_and_forth");
+        return 0;
+    }
+    if (arg == other) {
+#ifdef ENABLE_DEBUG
+        fmt::print(stderr, "Swapping focus of workspaces {} and {}\n", current, other);
+#endif
     }
     else if ((current - 1) / 10 != (arg - 1) / 10) {
+#ifdef ENABLE_DEBUG
+        fmt::print(stderr, "Focusing workspace {} from workspace {}\n", arg, current);
+#endif
         i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", other));
         i3.execute_commands(fmt::format("focus output {}", monitors.at((other - 1) / 10)));
         i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", arg));
