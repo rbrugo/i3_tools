@@ -63,6 +63,7 @@ if (i3_ipcpp_lib STREQUAL "i3_ipcpp_lib_NOT_FOUND")
     message(CRITICAL "Can't find i3-ipc++ libraries. Please check your i3-ipc++ installation")
 endif()
 
+message(${i3_ipcpp_lib})
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                            mv_to_monitor                             #
@@ -81,6 +82,7 @@ target_link_libraries(mv_to_monitor
 target_include_directories(mv_to_monitor
     PUBLIC
         "${CMAKE_CURRENT_LIST_DIR}/include"
+        "${CMAKE_CURRENT_LIST_DIR}/third_party/rollbear/include"
         ${i3_ipcpp_include_dir}
 )
 enable_sanitizers(mv_to_monitor)

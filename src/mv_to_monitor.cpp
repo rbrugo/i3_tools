@@ -7,8 +7,10 @@
 
 #include <thread>
 #include <algorithm>
-#include <i3-ipc++/i3_ipc.hpp>
 #include <fmt/core.h>
+#include <i3-ipc++/i3_ipc.hpp>
+
+#include "lift.hpp"
 
 #include "workspaces.hpp"
 #include "outputs.hpp"
@@ -81,7 +83,9 @@ bool fix_ws_output(i3_ipc const & i3, int current, auto const & monitors)
     auto const computed_output = monitors.at(idx);
 
     if (current_output != computed_output) {
+#ifdef ENABLE_DEBUG
         fmt::print(stderr, "Moving workspace from {} to {}\n", current, current_output, computed_output);
+#endif
         i3.execute_commands(fmt::format("move workspace to output {}", computed_output));
         return true;
     }
@@ -99,12 +103,11 @@ int main(int argc, char * argv[])
     auto const arg = std::string_view{argv[1]};
 
     auto const i3 = i3_ipc{std::getenv("I3SOCK")};
-    // auto const monitors = retrieve_randr_output_list();
     auto const monitors = brun::retrieve_output_names(i3);
     auto const focused = brun::focused_workspace_idx(i3).value_or(1);
+#ifdef ENABLE_DEBUG
     fmt::print(stderr, "Focused ws: {}\n", focused);
-    auto const other = brun::other_workspace_idx(i3).value_or(focused);
-    fmt::print(stderr, "Other ws: {}\n", other);
+#endif
 
     if (auto new_current = fix_ws_number(i3, focused, monitors); new_current.has_value()) {
         fix_ws_output(i3, *new_current, monitors);
@@ -122,13 +125,29 @@ int main(int argc, char * argv[])
         return 0;
     }
 
-    auto const target_output = std::string_view{monitors.at((new_val - 1) / 10)};
-    fmt::print(stderr, "Moving workspace {} to {} ({})\n", focused, new_val, target_output);
+    if (std::ranges::any_of(i3.get_workspaces(), lift::equal(new_val), &i3_containers::workspace::num)) {
+        // check if it has nodes
+        auto empty = brun::get_workspace_node(i3, new_val)
+            .map([](auto && node) { return node.nodes.empty(); } )
+            .value_or(true)
+            ;
+        if (not empty) {
+#ifdef ENABLE_DEBUG
+            fmt::print(stderr, "Workspace {} already exists - doing nothing...\n");
+#endif
+            return 0;
+        }
+    }
 
-    i3.execute_commands(fmt::format("rename workspace to {}", new_val));
-    i3.execute_commands(fmt::format("move workspace to output {}", target_output));
-    // i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", other));
-    // std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    auto const target_output = std::string_view{monitors.at((new_val - 1) / 10)};
+#ifdef ENABLE_DEBUG
+    fmt::print(stderr, "Moving workspace {} to {} ({})\n", focused, new_val, target_output);
+#endif
+
+    i3.execute_commands(fmt::format(
+        "rename workspace to {}; move workspace to output {}", new_val, target_output
+    ));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
     i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", new_val));
 
     // TODO: history of various outputs
