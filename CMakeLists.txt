@@ -162,4 +162,4 @@ add_custom_target(update
     COMMAND "${CMAKE_COMMAND}" -E copy_directory bin/ ~/.config/i3/bin/
     COMMAND strip ~/.config/i3/bin/*
 )
-add_dependencies(update mv_to_output focus_workspace focus_window)
+add_dependencies(update mv_to_output focus_workspace focus_window mv_container)
