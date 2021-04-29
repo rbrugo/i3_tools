@@ -132,6 +132,29 @@ enable_sanitizers(focus_window)
 enable_lto(focus_window)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+#                             mv_container                             #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+add_executable(mv_container)
+target_sources(mv_container PRIVATE src/mv_container.cpp)
+target_compile_features(mv_container PUBLIC cxx_std_20)
+target_link_options(mv_container PRIVATE)
+target_link_libraries(mv_container
+    PRIVATE
+        project_warnings
+        CONAN_PKG::fmt CONAN_PKG::tl-optional
+        ${i3_ipcpp_lib}
+)
+target_include_directories(mv_container
+    PUBLIC
+        "${CMAKE_CURRENT_LIST_DIR}/include"
+        # "${CMAKE_CURRENT_LIST_DIR}/third_party/rollbear/include"
+        ${i3_ipcpp_include_dir}
+)
+enable_sanitizers(mv_container)
+enable_lto(mv_container)
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                  update binaries in .config/i3/bin                   #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 add_custom_target(update
