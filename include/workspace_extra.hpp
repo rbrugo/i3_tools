@@ -88,7 +88,7 @@ bool fix_ws_output(i3_ipc const & i3, int target, Outputs const & output_names)
 
     if (current_output != computed_output) {
         brun::log("Moving workspace {} from {} to {}\n", target, current_output, computed_output);
-        i3.execute_commands(fmt::format("[workspace={}] move workspace to output {}", target, computed_output));
+        i3.execute_commands(fmt::format("[workspace=^{}$] move workspace to output {}", target, computed_output));
         return true;
     }
     return false;
