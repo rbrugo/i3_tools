@@ -112,7 +112,7 @@ catch (std::exception const & exc) {
  * \returns An optional containing the node of the requested workspace
  * */
 [[nodiscard]]
-auto get_workspace_node(i3_ipc const & i3, uint64_t idx)
+auto get_workspace_node(i3_ipc const & i3, uint64_t id)
     -> tl::optional<i3_containers::node>
 {
     auto nodes = std::queue<i3_containers::node>{};
@@ -123,7 +123,7 @@ auto get_workspace_node(i3_ipc const & i3, uint64_t idx)
         nodes.pop();
 
         if (node.type == i3_containers::node_type::workspace) {
-            if (node.id == idx) {
+            if (node.id == id) {
                 return node;
             }
             continue;
