@@ -1,8 +1,8 @@
 /**
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
- * @file        : mv_workspace
+ * @file        : mv_to_output
  * @created     : Wednesday Apr 07, 2021 23:11:51 CEST
- * @license     : MIT
+ * @description : moves a workspace to the output in the requested direction
  */
 
 #include <thread>
@@ -14,8 +14,8 @@
 
 #include "workspaces.hpp"
 #include "outputs.hpp"
-#include "workspace_utils.hpp"
-
+#include "workspace_extra.hpp"
+#include "utils.hpp"
 
 int main(int argc, char * argv[])
 {
@@ -29,9 +29,7 @@ int main(int argc, char * argv[])
     auto const i3 = i3_ipc{std::getenv("I3SOCK")};
     auto const monitors = brun::retrieve_output_names(i3);
     auto const focused = brun::focused_workspace_idx(i3).value_or(1);
-#ifdef ENABLE_DEBUG
-    fmt::print(stderr, "Focused ws: {}\n", focused);
-#endif
+    brun::log("Focused ws: {}\n", focused);
 
     if (auto new_current = brun::fix_ws_number(i3, focused, monitors); new_current.has_value()) {
         brun::fix_ws_output(i3, *new_current, monitors);
@@ -43,8 +41,9 @@ int main(int argc, char * argv[])
 
     auto const new_val = focused + (arg == "next" ? 10 : arg == "prev" ? -10 : 0);
     if (new_val <= 0 or new_val > std::ssize(monitors) * 10) {
-        fmt::print(stderr,
-           "Workspace {} is already in the extremal output {}\n", focused, monitors.at((focused - 1) / 10)
+        brun::log(
+            "Workspace {} is already in the extremal output {}\n",
+            focused, monitors[(focused - 1) / 10]
         );
         return 0;
     }
@@ -56,17 +55,13 @@ int main(int argc, char * argv[])
             .value_or(true)
             ;
         if (not empty) {
-#ifdef ENABLE_DEBUG
-            fmt::print(stderr, "Workspace {} already exists - doing nothing...\n");
-#endif
+            brun::log("Workspace {} already exists - doing nothing...\n");
             return 0;
         }
     }
 
     auto const target_output = std::string_view{monitors.at((new_val - 1) / 10)};
-#ifdef ENABLE_DEBUG
-    fmt::print(stderr, "Moving workspace {} to {} ({})\n", focused, new_val, target_output);
-#endif
+    brun::log("Moving workspace {} to {} ({})\n", focused, new_val, target_output);
 
     i3.execute_commands(fmt::format(
         "rename workspace to {}; move workspace to output {}", new_val, target_output

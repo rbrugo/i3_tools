@@ -2,7 +2,7 @@
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
  * @file        : utils
  * @created     : Thursday Apr 29, 2021 11:51:52 CEST
- * @license     : MIT
+ * @description : Various utility functions
  * */
 
 #ifndef UTILS_HPP
@@ -18,6 +18,7 @@
 namespace brun
 {
 template <typename ...Args>
+inline
 void log([[maybe_unused]] Args &&... args)
 {
 #ifdef ENABLE_DEBUG

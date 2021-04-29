@@ -1,18 +1,19 @@
 /**
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
- * @file        : workspace_utils
+ * @file        : workspace_extra
  * @created     : Wednesday Apr 28, 2021 23:50:58 CEST
- * @license     : MIT
+ * @description : Extra functions to work with workspaces
  * */
 
-#ifndef WORKSPACE_UTILS_HPP
-#define WORKSPACE_UTILS_HPP
+#ifndef WORKSPACE_EXTRA_HPP
+#define WORKSPACE_EXTRA_HPP
 
 #include <algorithm>
 #include <fmt/core.h>
 #include <i3-ipc++/i3_ipc.hpp>
 
 #include "outputs.hpp"
+#include "utils.hpp"
 
 namespace brun
 {
@@ -32,8 +33,7 @@ auto fix_ws_number(i3_ipc const & i3, int current, auto const & monitors)
     auto const max_ws = std::ssize(monitors) * 10;
 #ifdef ENABLE_DEBUG
     fmt::print("Max ws is {}\n", max_ws);
-    for (auto const & monitor : monitors)
-    {
+    for (auto const & monitor : monitors) {
         fmt::print(stderr, "- {}\n", monitor);
     }
 #endif
@@ -48,9 +48,7 @@ auto fix_ws_number(i3_ipc const & i3, int current, auto const & monitors)
                     found == std::ranges::end(workspaces))
                 {
                     i3.execute_commands(fmt::format("rename workspace to {}", base + offset));
-#ifdef ENABLE_DEBUG
-                    fmt::print(stderr, "Moved workspace {} to {}\n", current, base + offset);
-#endif
+                    brun::log("Moved workspace {} to {}\n", current, base + offset);
                     return {base + offset};
                 }
             }
@@ -59,9 +57,7 @@ auto fix_ws_number(i3_ipc const & i3, int current, auto const & monitors)
                     found == std::ranges::end(workspaces))
                 {
                     i3.execute_commands(fmt::format("rename workspace to {}", base - offset));
-#ifdef ENABLE_DEBUG
-                    fmt::print(stderr, "Moved workspace {} to {}\n", current, base - offset);
-#endif
+                    brun::log("Moved workspace {} to {}\n", current, base - offset);
                     return {base - offset};
                 }
             }
@@ -85,17 +81,13 @@ bool fix_ws_output(i3_ipc const & i3, int target, Outputs const & output_names)
     auto const current_output  = brun::workspace_output(i3, target);
     // auto const computed_output = output_names.at(idx);
     if (auto size = std::ranges::ssize(output_names); idx >= size) {
-#ifdef ENABLE_DEBUG
-        fmt::print(stderr, "Error - attempting to access element {} of {} in output_names\n", idx, size);
-#endif
+        brun::log("Error - attempting to access element {} of {} in output_names\n", idx, size);
         return false;
     }
     auto const computed_output = output_names[idx];
 
     if (current_output != computed_output) {
-#ifdef ENABLE_DEBUG
-        fmt::print(stderr, "Moving workspace {} from {} to {}\n", target, current_output, computed_output);
-#endif
+        brun::log("Moving workspace {} from {} to {}\n", target, current_output, computed_output);
         i3.execute_commands(fmt::format("[workspace={}] move workspace to output {}", target, computed_output));
         return true;
     }
@@ -111,4 +103,4 @@ bool fix_ws_output(i3_ipc const & i3, int current)
 
 } // namespace brun
 
-#endif /* WORKSPACE_UTILS_HPP */
+#endif /* WORKSPACE_EXTRA_HPP */

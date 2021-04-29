@@ -2,7 +2,7 @@
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
  * @file        : i3_utils
  * @created     : Thursday Apr 08, 2021 22:54:38 CEST
- * @license     : MIT
+ * @description : Collection of functions to work with workspaces
  * */
 
 #ifndef I3_UTILS_HPP

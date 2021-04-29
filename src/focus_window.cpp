@@ -2,17 +2,16 @@
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
  * @file        : focus_window
  * @created     : Monday Apr 19, 2021 02:13:59 CEST
- * @license     : MIT
  * @description : a wrapper for "i3-msg focus" to focus containers also in fullscreen
  */
 #include <i3-ipc++/i3_ipc.hpp>
 #include <fmt/core.h>
-
 #include "dry-comparisons.hpp"
 
 #include "nodes.hpp"
 #include "workspaces.hpp"
 #include "outputs.hpp"
+#include "utils.hpp"
 
 int main(int argc, char const * argv[])
 {
@@ -38,7 +37,7 @@ int main(int argc, char const * argv[])
     auto const focused_position = brun::node_on_border(i3);
 
 #ifdef ENABLE_DEBUG
-    fmt::print("Position on border: {}\n", print_border(focused_position));
+    brun::log("Position on border: {}\n", brun::print_border(focused_position));
 #endif
 
     // Check if the focused window in the currently focused ws is in fullscreen
@@ -54,9 +53,7 @@ int main(int argc, char const * argv[])
                       or (direction == "up" and brun::is_on_<border::top>(focused_position))
                       or (direction == "down" and brun::is_on_<border::bottom>(focused_position))
                       ;
-#ifdef ENABLE_DEBUG
-    fmt::print("Changing screen: {}\n", change_screen);
-#endif
+    brun::log("Changing screen: {}\n", change_screen);
 
     // I need to toggle the fullscreen only if the fullscreen is active and if the "next" node is in
     //  the same output as the current

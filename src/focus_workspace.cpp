@@ -2,7 +2,7 @@
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
  * @file        : focus_workspace
  * @created     : Thursday Apr 08, 2021 22:28:01 CEST
- * @license     : MIT
+ * @description : focus the requested workspace
  */
 
 #include <charconv>
@@ -12,6 +12,7 @@
 
 #include "workspaces.hpp"
 #include "outputs.hpp"
+#include "utils.hpp"
 
 #define ENABLE_DEBUG
 
@@ -36,27 +37,18 @@ int main(int argc, char * argv[])
     auto const current = brun::focused_workspace_idx(i3).value_or(1);
     auto const other = brun::other_workspace_idx(i3).value_or(current);
 
-#ifdef ENABLE_DEBUG
-    fmt::print(stderr, "Focused: {}\n", current);
-    fmt::print(stderr, "Other:   {}\n", other);
-#endif
+    brun::log("Focused: {}\nOther:   {}\n", current, other);
 
     if (arg == current) {
-#ifdef ENABLE_DEBUG
-        fmt::print(stderr, "Focusing from workspace {} using back and forth\n", arg);
-#endif
+        brun::log("Focusing from workspace {} using back and forth\n", arg);
         i3.execute_commands("workspace back_and_forth");
         return 0;
     }
     if (arg == other) {
-#ifdef ENABLE_DEBUG
-        fmt::print(stderr, "Swapping focus of workspaces {} and {}\n", current, other);
-#endif
+        brun::log("Swapping focus of workspaces {} and {}\n", current, other);
     }
     else if ((current - 1) / 10 != (arg - 1) / 10) {
-#ifdef ENABLE_DEBUG
-        fmt::print(stderr, "Focusing workspace {} from workspace {}\n", arg, current);
-#endif
+        brun::log("Focusing workspace {} from workspace {}\n", arg, current);
         i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", other));
         i3.execute_commands(fmt::format("focus output {}", monitors.at((other - 1) / 10)));
         i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", arg));
