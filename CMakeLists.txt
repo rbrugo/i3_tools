@@ -13,9 +13,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_EXTENSIONS NO)
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-#                                Conan                                 #
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+#                Conan                 #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 include(cmake/conan.cmake)
 conan_cmake_configure(
     REQUIRES fmt/7.1.2 tl-optional/1.0.0  # scope-lite/0.1.0
@@ -31,21 +31,21 @@ conan_cmake_install(
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS) # enables the import of single libraries
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-#                               Threads                                #
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+#               Threads                #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 find_package(Threads REQUIRED)
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-#                           Enable warnings                            #
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+#           Enable warnings            #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 add_library(project_warnings INTERFACE)
 include(cmake/compiler_warnings.cmake)
 set_project_warnings(project_warnings)
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-#                        Dependency on i3-ipc++                        #
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+#        Dependency on i3-ipc++        #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 find_path(i3_ipcpp_include_dir
     NAMES i3_containers.hpp i3_ipc.hpp
     PATHS /usr/local /usr/local/include/i3-ipc++ /usr/local/lib/i3-ipc++
@@ -65,8 +65,18 @@ endif()
 
 message(${i3_ipcpp_lib})
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+#           enable_debug_log           #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+function(enable_debug_log target)
+    option(enable_debug_log_for_${target} "Enable debug log for target ${target}" OFF)
+    if ("${enable_debug_log_for_${target}}")
+        target_compile_definitions("${target}" PUBLIC -DENABLE_DEBUG_LOG)
+    endif()
+endfunction()
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-#                            mv_to_output                             #
+#                             mv_to_output                             #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 add_executable(mv_to_output)
 target_sources(mv_to_output PRIVATE src/mv_to_output.cpp)
@@ -87,6 +97,7 @@ target_include_directories(mv_to_output
 )
 enable_sanitizers(mv_to_output)
 enable_lto(mv_to_output)
+enable_debug_log(mv_to_output)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                           focus_workspace                            #
@@ -108,6 +119,7 @@ target_include_directories(focus_workspace
 )
 enable_sanitizers(focus_workspace)
 enable_lto(focus_workspace)
+enable_debug_log(focus_workspace)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                             focus_window                             #
@@ -130,6 +142,7 @@ target_include_directories(focus_window
 )
 enable_sanitizers(focus_window)
 enable_lto(focus_window)
+enable_debug_log(focus_window)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                             mv_container                             #
@@ -147,12 +160,11 @@ target_link_libraries(mv_container
 target_include_directories(mv_container
     PUBLIC
         "${CMAKE_CURRENT_LIST_DIR}/include"
-        # "${CMAKE_CURRENT_LIST_DIR}/third_party/rollbear/include"
         ${i3_ipcpp_include_dir}
 )
 enable_sanitizers(mv_container)
 enable_lto(mv_container)
-
+enable_debug_log(mv_container)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                  update binaries in .config/i3/bin                   #

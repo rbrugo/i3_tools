@@ -36,7 +36,7 @@ int main(int argc, char const * argv[])
     // Get the position of the focused window
     auto const focused_position = brun::node_on_border(i3);
 
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_LOG
     brun::log("Position on border: {}\n", brun::print_border(focused_position));
 #endif
 

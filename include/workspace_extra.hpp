@@ -31,7 +31,7 @@ auto fix_ws_number(i3_ipc const & i3, int current, auto const & monitors)
     // If the workspace number is too high, find the nearest free workspace to the right placement
     //  and move it there
     auto const max_ws = std::ssize(monitors) * 10;
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_LOG
     fmt::print("Max ws is {}\n", max_ws);
     for (auto const & monitor : monitors) {
         fmt::print(stderr, "- {}\n", monitor);

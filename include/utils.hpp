@@ -11,9 +11,9 @@
 #include <charconv>
 #include <string_view>
 #include <tl/optional.hpp>
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_LOG
 #include <fmt/core.h>
-#endif // ENABLE_DEBUG
+#endif // ENABLE_DEBUG_LOG
 
 namespace brun
 {
@@ -21,9 +21,9 @@ template <typename ...Args>
 inline
 void log([[maybe_unused]] Args &&... args)
 {
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_LOG
     fmt::print(stderr, std::forward<Args>(args)...);
-#endif // ENABLE_DEBUG
+#endif // ENABLE_DEBUG_LOG
 
 }
 

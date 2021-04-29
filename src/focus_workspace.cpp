@@ -14,8 +14,6 @@
 #include "outputs.hpp"
 #include "utils.hpp"
 
-#define ENABLE_DEBUG
-
 int main(int argc, char * argv[])
 {
     if (argc != 2) {

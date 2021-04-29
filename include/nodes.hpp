@@ -12,9 +12,9 @@
 #include <i3-ipc++/i3_ipc.hpp>
 #include <tl/optional.hpp>
 
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_LOG
 #include <fmt/core.h>
-#endif // ENABLE_DEBUG
+#endif // ENABLE_DEBUG_LOG
 
 namespace brun
 {
@@ -98,7 +98,7 @@ bool is_on_(border target)
 static_assert(is_on_<border::left>(border::left | border::top));
 static_assert(not is_on_<border::right>(border::left | border::top));
 
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_LOG
 auto print_border(border x)
 {
     // using enum border;
@@ -191,7 +191,7 @@ auto node_on_border_impl(i3_containers::node const & node, border on_border)
              ;
     }();
     if (focused_child->is_focused) {
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_LOG
         fmt::print("Of {} childs, one is focused:\n", node.nodes.size());
         fmt::print("This container is on border: {}\n", print_border(on_border));
         fmt::print("This container has vertical layout: {}\n", vertical_layout);

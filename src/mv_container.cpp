@@ -5,7 +5,6 @@
  * @description : moves a container in the requested workspace, eventually creating it on the right output
  */
 
-#define ENABLE_DEBUG
 #include <i3-ipc++/i3_ipc.hpp>
 #include <fmt/core.h>
 #include <charconv>
