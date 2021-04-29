@@ -66,27 +66,27 @@ endif()
 message(${i3_ipcpp_lib})
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-#                            mv_to_monitor                             #
+#                            mv_to_output                             #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-add_executable(mv_to_monitor)
-target_sources(mv_to_monitor PRIVATE src/mv_to_monitor.cpp)
-target_compile_features(mv_to_monitor PUBLIC cxx_std_20)
-target_link_options(mv_to_monitor PRIVATE)
-target_link_directories(mv_to_monitor PUBLIC)
-target_link_libraries(mv_to_monitor
+add_executable(mv_to_output)
+target_sources(mv_to_output PRIVATE src/mv_to_output.cpp)
+target_compile_features(mv_to_output PUBLIC cxx_std_20)
+target_link_options(mv_to_output PRIVATE)
+target_link_directories(mv_to_output PUBLIC)
+target_link_libraries(mv_to_output
     PRIVATE
         project_warnings
         CONAN_PKG::fmt CONAN_PKG::tl-optional
         ${i3_ipcpp_lib}
 )
-target_include_directories(mv_to_monitor
+target_include_directories(mv_to_output
     PUBLIC
         "${CMAKE_CURRENT_LIST_DIR}/include"
         "${CMAKE_CURRENT_LIST_DIR}/third_party/rollbear/include"
         ${i3_ipcpp_include_dir}
 )
-enable_sanitizers(mv_to_monitor)
-enable_lto(mv_to_monitor)
+enable_sanitizers(mv_to_output)
+enable_lto(mv_to_output)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                           focus_workspace                            #
@@ -139,4 +139,4 @@ add_custom_target(update
     COMMAND "${CMAKE_COMMAND}" -E copy_directory bin/ ~/.config/i3/bin/
     COMMAND strip ~/.config/i3/bin/*
 )
-add_dependencies(update mv_to_monitor focus_workspace focus_window)
+add_dependencies(update mv_to_output focus_workspace focus_window)
