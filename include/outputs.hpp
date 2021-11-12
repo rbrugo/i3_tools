@@ -2,12 +2,13 @@
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
  * @file        : outputs
  * @created     : Friday Apr 23, 2021 19:44:00 CEST
- * @description : Collection of functions to work with outputs
+ * @license     : MIT
  * */
 
 #ifndef OUTPUTS_HPP
 #define OUTPUTS_HPP
 
+#include <ranges>
 #include <algorithm>
 #include <tl/optional.hpp>
 #include <i3-ipc++/i3_ipc.hpp>

@@ -2,7 +2,7 @@
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
  * @file        : nodes
  * @created     : Friday Apr 23, 2021 19:17:14 CEST
- * @description : Collection of functions to work with tree and nodes
+ * @license     : MIT
  * */
 
 #ifndef NODES_HPP
@@ -12,9 +12,9 @@
 #include <i3-ipc++/i3_ipc.hpp>
 #include <tl/optional.hpp>
 
-#ifdef ENABLE_DEBUG_LOG
+#ifdef ENABLE_DEBUG
 #include <fmt/core.h>
-#endif // ENABLE_DEBUG_LOG
+#endif
 
 namespace brun
 {
@@ -98,7 +98,7 @@ bool is_on_(border target)
 static_assert(is_on_<border::left>(border::left | border::top));
 static_assert(not is_on_<border::right>(border::left | border::top));
 
-#ifdef ENABLE_DEBUG_LOG
+#ifdef ENABLE_DEBUG
 auto print_border(border x)
 {
     // using enum border;
@@ -191,14 +191,14 @@ auto node_on_border_impl(i3_containers::node const & node, border on_border)
              ;
     }();
     if (focused_child->is_focused) {
-#ifdef ENABLE_DEBUG_LOG
+#ifdef ENABLE_DEBUG
         fmt::print("Of {} childs, one is focused:\n", node.nodes.size());
         fmt::print("This container is on border: {}\n", print_border(on_border));
         fmt::print("This container has vertical layout: {}\n", vertical_layout);
         fmt::print("Child is on left: {}\n", child_on_left);
         fmt::print("Child is on right: {}\n", child_on_right);
         fmt::print("Child is on top: {}\n", child_on_top);
-        fmt::print("Child is on bottom: {}\n", child_on_bot);
+        fmt::print("Child is on bottom: {}\n", child_on_bottom);
 #endif
         return child_position;
     }

@@ -2,6 +2,7 @@
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
  * @file        : lippincott
  * @created     : Friday Apr 23, 2021 19:47:09 CEST
+ * @license     : MIT
  * */
 
 #ifndef DETAIL_LIPPINCOTT_HPP

@@ -2,17 +2,20 @@
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
  * @file        : focus_workspace
  * @created     : Thursday Apr 08, 2021 22:28:01 CEST
- * @description : focus the requested workspace
+ * @description : a tool to help focusing the right workspace on the right monitor in a multimonitor i3 setup
  */
 
 #include <charconv>
 #include <algorithm>
 #include <i3-ipc++/i3_ipc.hpp>
+#include <i3-ipc++/i3_ipc_bad_message.hpp>
 #include <fmt/core.h>
+#ifdef ENABLE_DEBUG
+#include <fmt/ranges.h>
+#endif
 
 #include "workspaces.hpp"
 #include "outputs.hpp"
-#include "utils.hpp"
 
 int main(int argc, char * argv[])
 {
@@ -35,22 +38,41 @@ int main(int argc, char * argv[])
     auto const current = brun::focused_workspace_idx(i3).value_or(1);
     auto const other = brun::other_workspace_idx(i3).value_or(current);
 
-    brun::log("Focused: {}\nOther:   {}\n", current, other);
+#ifdef ENABLE_DEBUG
+    fmt::print(stderr, "Focused ws: {}\n", current);
+    fmt::print(stderr, "Other focused ws:   {}\n", other);
+#endif
 
-    if (arg == current) {
-        brun::log("Focusing from workspace {} using back and forth\n", arg);
-        i3.execute_commands("workspace back_and_forth");
-        return 0;
+    if (current == other) {
+#ifdef ENABLE_DEBUG
+        fmt::print(stderr, "Only workspace {} is focused\n", current);
+#endif
+        i3.execute_commands(fmt::format("workspace {}", arg));
     }
-    if (arg == other) {
-        brun::log("Swapping focus of workspaces {} and {}\n", current, other);
+    else if (arg == other) {
+#ifdef ENABLE_DEBUG
+        fmt::print(stderr, "Swapping focus of workspaces {} and {}\n", current, other);
+#endif
+        i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", arg));
+    }
+    else if (arg == current) {
+#ifdef ENABLE_DEBUG
+        fmt::print(stderr, "Focusing from workspace {} using back and forth\n", arg);
+#endif
+        i3.execute_commands("workspace back_and_forth");
     }
     else if ((current - 1) / 10 != (arg - 1) / 10) {
-        brun::log("Focusing workspace {} from workspace {}\n", arg, current);
+#ifdef ENABLE_DEBUG
+        fmt::print(stderr, "Third case\n");
+#endif
         i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", other));
-        i3.execute_commands(fmt::format("focus output {}", monitors.at((other - 1) / 10)));
+        i3.execute_commands(fmt::format("focus output {}", monitors.at((other / 10) - 1)));
         i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", arg));
         i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", current));
+        i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", arg));
+    } else {
+#ifdef ENABLE_DEBUG
+        fmt::print(stderr, "What a bizzarre case\n");
+#endif
     }
-    i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", arg));
 }
