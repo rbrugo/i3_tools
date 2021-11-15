@@ -23,7 +23,7 @@ int main(int argc, char * argv[])
         fmt::print(stderr, "Usage: {} workspace_num\n", argv[0]);
         return 255;
     }
-    auto const arg = [arg=argv[1]] {
+    auto const target_ws = [arg=argv[1]] {
         int n = -1;
         auto const [ptr, ec] = std::from_chars(arg, arg + std::strlen(arg), n);
         if (ec != std::errc{}) {
@@ -35,44 +35,52 @@ int main(int argc, char * argv[])
 
     auto const i3 = i3_ipc{std::getenv("I3SOCK")};
     auto const monitors = brun::retrieve_output_names(i3);
-    auto const current = brun::focused_workspace_idx(i3).value_or(1);
-    auto const other = brun::other_workspace_idx(i3).value_or(current);
+    auto const current_ws = brun::focused_workspace_idx(i3).value_or(1);
+    auto const other_focused_ws = brun::other_workspace_idx(i3).value_or(current_ws);
 
 #ifdef ENABLE_DEBUG
-    fmt::print(stderr, "Focused ws: {}\n", current);
-    fmt::print(stderr, "Other focused ws:   {}\n", other);
+    fmt::print(stderr, "Focused ws:   {}\n", current_ws);
+    fmt::print(stderr, "Other focused ws:   {}\n", other_focused_ws);
+    fmt::print(stderr, "Ws to focus:   {}\n", target_ws);
 #endif
 
-    if (current == other) {
+    if (current_ws == other_focused_ws) {
 #ifdef ENABLE_DEBUG
-        fmt::print(stderr, "Only workspace {} is focused\n", current);
+        fmt::print(stderr, "Only workspace {} is focused\n", current_ws);
 #endif
-        i3.execute_commands(fmt::format("workspace {}", arg));
+        i3.execute_commands(fmt::format("workspace {}", target_ws));
     }
-    else if (arg == other) {
+    else if (target_ws == other_focused_ws) {
 #ifdef ENABLE_DEBUG
-        fmt::print(stderr, "Swapping focus of workspaces {} and {}\n", current, other);
+        fmt::print(stderr, "Swapping focus of workspaces {} and {}\n", current_ws, other_focused_ws);
 #endif
-        i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", arg));
+        i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", target_ws));
     }
-    else if (arg == current) {
+    else if (target_ws == current_ws) {
 #ifdef ENABLE_DEBUG
-        fmt::print(stderr, "Focusing from workspace {} using back and forth\n", arg);
+        fmt::print(stderr, "Focusing from workspace {} using back and forth\n", target_ws);
 #endif
         i3.execute_commands("workspace back_and_forth");
     }
-    else if ((current - 1) / 10 != (arg - 1) / 10) {
+    else {
+        auto const current_output = (current_ws - 1) / 10;
+        auto const other_focused_output = (other_focused_ws - 1) / 10;
+        auto const target_output  = (target_ws - 1) / 10;
+        if (current_output != target_output) {
 #ifdef ENABLE_DEBUG
-        fmt::print(stderr, "Third case\n");
+            fmt::print(stderr, "Current output is not target output\n");
 #endif
-        i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", other));
-        i3.execute_commands(fmt::format("focus output {}", monitors.at((other / 10) - 1)));
-        i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", arg));
-        i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", current));
-        i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", arg));
-    } else {
+            i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", other_focused_ws));
+            // i3.execute_commands(fmt::format("focus output {}", monitors.at((other_focused_ws / 10) - 1)));
+            i3.execute_commands(fmt::format("focus output {}", monitors.at(other_focused_output)));
+            i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", target_ws));
+            i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", current_ws));
+            i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", target_ws));
+        } else {
 #ifdef ENABLE_DEBUG
-        fmt::print(stderr, "What a bizzarre case\n");
+            fmt::print(stderr, "Current output is target output\n");
 #endif
+            i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", target_ws));
+        }
     }
 }
