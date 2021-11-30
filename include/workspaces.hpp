@@ -2,11 +2,11 @@
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
  * @file        : i3_utils
  * @created     : Thursday Apr 08, 2021 22:54:38 CEST
- * @license     : MIT
+ * @description : Collection of functions to work with workspaces
  * */
 
-#ifndef I3_UTILS_HPP
-#define I3_UTILS_HPP
+#ifndef I3_TOOLS_WORKSPACES_HPP
+#define I3_TOOLS_WORKSPACES_HPP
 
 #include <algorithm>
 #include <tl/optional.hpp>
@@ -66,6 +66,7 @@ catch (std::exception const & exc) {
  * \returns An optional containing the visible but unfocused workspace, or an empty optional if it
  *          was found
  * */
+[[nodiscard]]
 auto other_workspace(i3_ipc const & i3)
     -> tl::optional<i3_containers::workspace>
 try {
@@ -103,7 +104,38 @@ catch (std::exception const & exc) {
     detail::lippincott();
 }
 
+/**
+ * Returns the node of the tree representing the requested workspace
+ *
+ * \param i3 The current i3 instance
+ * \param idx The workspace index
+ * \returns An optional containing the node of the requested workspace
+ * */
+[[nodiscard]]
+auto get_workspace_node(i3_ipc const & i3, uint64_t id)
+    -> tl::optional<i3_containers::node>
+{
+    auto nodes = std::queue<i3_containers::node>{};
+    nodes.push(i3.get_tree());
+
+    while (not nodes.empty()) {
+        auto node = std::move(nodes.front());
+        nodes.pop();
+
+        if (node.type == i3_containers::node_type::workspace) {
+            if (node.id == id) {
+                return node;
+            }
+            continue;
+        }
+        for (auto const & subnode : node.nodes) {
+            nodes.push(subnode);
+        }
+    }
+    return tl::nullopt;
+}
+
 } // namespace brun
 
-#endif /* I3_UTILS_HPP */
+#endif /* I3_TOOLS_WORKSPACES_HPP */
 

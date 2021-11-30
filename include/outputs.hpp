@@ -2,7 +2,7 @@
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
  * @file        : outputs
  * @created     : Friday Apr 23, 2021 19:44:00 CEST
- * @license     : MIT
+ * @description : Collection of functions to work with outputs
  * */
 
 #ifndef OUTPUTS_HPP

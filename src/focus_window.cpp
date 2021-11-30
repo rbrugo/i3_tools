@@ -2,7 +2,6 @@
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
  * @file        : focus_window
  * @created     : Monday Apr 19, 2021 02:13:59 CEST
- * @license     : MIT
  * @description : a wrapper for "i3-msg focus" to focus containers also in fullscreen
  */
 #include <i3-ipc++/i3_ipc.hpp>

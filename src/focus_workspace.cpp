@@ -71,7 +71,6 @@ int main(int argc, char * argv[])
             fmt::print(stderr, "Current output is not target output\n");
 #endif
             i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", other_focused_ws));
-            // i3.execute_commands(fmt::format("focus output {}", monitors.at((other_focused_ws / 10) - 1)));
             i3.execute_commands(fmt::format("focus output {}", monitors.at(other_focused_output)));
             i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", target_ws));
             i3.execute_commands(fmt::format("workspace --no-auto-back-and-forth {}", current_ws));

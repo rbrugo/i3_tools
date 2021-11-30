@@ -2,7 +2,7 @@
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
  * @file        : nodes
  * @created     : Friday Apr 23, 2021 19:17:14 CEST
- * @license     : MIT
+ * @description : Collection of functions to work with tree and nodes
  * */
 
 #ifndef NODES_HPP
@@ -198,7 +198,7 @@ auto node_on_border_impl(i3_containers::node const & node, border on_border)
         fmt::print("Child is on left: {}\n", child_on_left);
         fmt::print("Child is on right: {}\n", child_on_right);
         fmt::print("Child is on top: {}\n", child_on_top);
-        fmt::print("Child is on bottom: {}\n", child_on_bottom);
+        fmt::print("Child is on bottom: {}\n", child_on_bot);
 #endif
         return child_position;
     }
