@@ -78,10 +78,15 @@ template <std::ranges::random_access_range Outputs>
 bool fix_ws_output(i3_ipc const & i3, int target, Outputs const & output_names)
 {
     auto const idx = (target - 1) / 10;
-    auto const current_output  = brun::workspace_output(i3, target);
-    // auto const computed_output = output_names.at(idx);
+
     if (auto size = std::ranges::ssize(output_names); idx >= size) {
-        brun::log("Error - attempting to access element {} of {} in output_names\n", idx, size);
+        brun::log("Warning - attempting to access element {} of {} in output_names\n", idx, size);
+        return false;
+    }
+
+    auto const current_output  = brun::workspace_output(i3, target);
+    if (current_output.empty()) {
+        brun::log("Moving from unnamed output - nothing to do\n");
         return false;
     }
     auto const computed_output = output_names[idx];
