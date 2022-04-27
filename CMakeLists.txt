@@ -58,27 +58,16 @@ endfunction()
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #        Dependency on i3-ipc++        #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-find_path(i3_ipcpp_include_dir
-    NAMES i3_containers.hpp i3_ipc.hpp
-    PATHS /usr/local /usr/local/include/i3-ipc++ /usr/local/lib/i3-ipc++
-)
-
-find_library(i3_ipcpp_lib
-    NAMES libi3-ipc++.a i3-ipc++
-    PATHS /usr/local/ /usr/local/include/i3-ipc++/ /usr/local/lib/i3-ipc++
-)
-
-if (i3_ipcpp_include_dir STREQUAL "i3_ipcpp_include_dir_NOT_FOUND")
-    message(CRITICAL "Can't find i3-ipc++ headers. Please check your i3-ipc++ installation")
+find_package(i3-ipc++ REQUIRED)
+if (i3-ipc++_FOUND)
+    get_target_property(i3-ipc++-includedir i3-ipc++::i3-ipc++ INTERFACE_INCLUDE_DIRECTORIES)
+    message(STATUS ">>>>> i3-ipc++ found, includedir is '${i3-ipc++-includedir}'")
+else()
+    message(STATUS ">>>>> i3-ipc++ not found")
 endif()
-if (i3_ipcpp_lib STREQUAL "i3_ipcpp_lib_NOT_FOUND")
-    message(CRITICAL "Can't find i3-ipc++ libraries. Please check your i3-ipc++ installation")
-endif()
-
-message(${i3_ipcpp_lib})
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-#                            mv_to_output                             #
+#                             mv_to_output                             #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 add_executable(mv_to_output)
 target_sources(mv_to_output PRIVATE src/mv_to_output.cpp)
@@ -87,8 +76,8 @@ target_link_options(mv_to_output PRIVATE)
 target_link_libraries(mv_to_output
     PRIVATE
         project_warnings
+        i3-ipc++::i3-ipc++
         CONAN_PKG::fmt CONAN_PKG::tl-optional
-        ${i3_ipcpp_lib}
 )
 target_include_directories(mv_to_output PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
 enable_sanitizers(mv_to_output)
@@ -106,7 +95,7 @@ target_link_libraries(focus_workspace
     PRIVATE
         project_warnings
         CONAN_PKG::fmt CONAN_PKG::tl-optional
-        ${i3_ipcpp_lib}
+        i3-ipc++::i3-ipc++
 )
 target_include_directories(focus_workspace PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
 enable_sanitizers(focus_workspace)
@@ -124,7 +113,7 @@ target_link_libraries(focus_window
     PRIVATE
         project_warnings
         CONAN_PKG::fmt CONAN_PKG::tl-optional
-        ${i3_ipcpp_lib}
+        i3-ipc++::i3-ipc++
 )
 target_include_directories(focus_window
     PUBLIC
@@ -146,7 +135,7 @@ target_link_libraries(mv_container
     PRIVATE
         project_warnings
         CONAN_PKG::fmt CONAN_PKG::tl-optional
-        ${i3_ipcpp_lib}
+        i3-ipc++::i3-ipc++
 )
 target_include_directories(mv_container
     PUBLIC
@@ -167,7 +156,7 @@ target_link_libraries(exec
     PRIVATE
         project_warnings
         CONAN_PKG::fmt CONAN_PKG::tl-optional
-        ${i3_ipcpp_lib}
+        i3-ipc++::i3-ipc++
 )
 target_include_directories(exec
     PUBLIC
