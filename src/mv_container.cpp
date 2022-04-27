@@ -1,13 +1,6 @@
 /**
  * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
  * @file        : mv_container
- * @created     : Tuesday Nov 30, 2021 01:13:44 CET
- * @description : moves a container in the requested workspace, eventually creating it on the right output
- */
-
-/**
- * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
- * @file        : mv_container
  * @created     : Wednesday Apr 28, 2021 22:33:01 CEST
  * @description : moves a container in the requested workspace, eventually creating it on the right output
  */
