@@ -145,6 +145,29 @@ target_include_directories(mv_container
 enable_sanitizers(mv_container)
 enable_lto(mv_container)
 enable_debug_log(mv_container)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+#                            fix_workspaces                            #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+add_executable(fix_workspaces)
+target_sources(fix_workspaces PRIVATE src/fix_workspaces.cpp)
+target_compile_features(fix_workspaces PUBLIC cxx_std_20)
+target_link_options(fix_workspaces PRIVATE)
+target_link_libraries(fix_workspaces
+    PRIVATE
+        project_warnings
+        CONAN_PKG::fmt CONAN_PKG::tl-optional
+        i3-ipc++::i3-ipc++
+)
+target_include_directories(fix_workspaces
+    PUBLIC
+        "${CMAKE_CURRENT_LIST_DIR}/include"
+        "${CMAKE_CURRENT_LIST_DIR}/third_party/rollbear/include"
+)
+enable_sanitizers(fix_workspaces)
+enable_lto(fix_workspaces)
+enable_debug_log(fix_workspaces)
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                                 exec                                 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
@@ -176,4 +199,4 @@ add_custom_target(update
     COMMAND "${CMAKE_COMMAND}" -E copy_directory bin/ ~/.config/i3/bin/
     COMMAND strip ~/.config/i3/bin/*
 )
-add_dependencies(update mv_to_output focus_workspace focus_window mv_container exec)
+add_dependencies(update mv_to_output focus_workspace focus_window mv_container fix_workspaces exec)
