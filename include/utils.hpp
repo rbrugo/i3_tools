@@ -19,10 +19,10 @@ namespace brun
 {
 template <typename ...Args>
 inline
-void log([[maybe_unused]] Args &&... args)
+void log([[maybe_unused]] std::string_view fmt_string, [[maybe_unused]] Args &&... args)
 {
 #ifdef ENABLE_DEBUG_LOG
-    fmt::print(stderr, std::forward<Args>(args)...);
+    fmt::print(stderr, fmt::runtime(fmt_string), std::forward<Args>(args)...);
 #endif // ENABLE_DEBUG_LOG
 
 }
