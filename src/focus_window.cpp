@@ -22,7 +22,7 @@ int main(int argc, char const * argv[])
 
     auto const direction = std::string_view{argv[1]};
 
-    if (direction == rollbear::none_of{"left", "right", "up", "down"}) {
+    if (rollbear::none_of{"left", "right", "up", "down"} == direction) {
         fmt::print(stderr, "The argument is required to be one of: left, right, up, down\n");
         return 1;
     }

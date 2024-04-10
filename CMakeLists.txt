@@ -4,6 +4,11 @@
 # @created     : Thursday Apr 08, 2021 22:28:01 CEST
 ######################################################################
 
+# TO USE CONAN:
+#  conan install conanfile.txt --output-folder=build --build=missing --settings=build_type=Release
+#  cmake --preset conan-release
+#  cmake --build --preset conan-release
+
 cmake_minimum_required(VERSION 3.16.2)
 
 project(i3-utils VERSION 0.1 LANGUAGES CXX)
@@ -13,23 +18,16 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_EXTENSIONS NO)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                                Conan                                 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-include(cmake/conan.cmake)
-conan_cmake_configure(
-    REQUIRES fmt/8.0.1 tl-optional/1.0.0  # scope-lite/0.1.0
-    BASIC_SETUP CMAKE_TARGETS
-)
-conan_cmake_autodetect(settings)
-conan_cmake_install(
-    PATH_OR_REFERENCE ${CMAKE_BINARY_DIR}
-    BUILD missing
-    GENERATOR cmake
-    SETTINGS ${settings}
-)
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS) # enables the import of single libraries
+set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
+set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
+
+find_package(fmt REQUIRED)
+find_package(tl-optional REQUIRED)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                               Threads                                #
@@ -77,7 +75,7 @@ target_link_libraries(mv_to_output
     PRIVATE
         project_warnings
         i3-ipc++::i3-ipc++
-        CONAN_PKG::fmt CONAN_PKG::tl-optional
+        fmt::fmt tl::optional
 )
 target_include_directories(mv_to_output PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
 enable_sanitizers(mv_to_output)
@@ -94,7 +92,7 @@ target_link_options(focus_workspace PRIVATE)
 target_link_libraries(focus_workspace
     PRIVATE
         project_warnings
-        CONAN_PKG::fmt CONAN_PKG::tl-optional
+        fmt::fmt tl::optional
         i3-ipc++::i3-ipc++
 )
 target_include_directories(focus_workspace PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
@@ -112,7 +110,7 @@ target_link_options(focus_window PRIVATE)
 target_link_libraries(focus_window
     PRIVATE
         project_warnings
-        CONAN_PKG::fmt CONAN_PKG::tl-optional
+        fmt::fmt tl::optional
         i3-ipc++::i3-ipc++
 )
 target_include_directories(focus_window
@@ -134,7 +132,7 @@ target_link_options(mv_container PRIVATE)
 target_link_libraries(mv_container
     PRIVATE
         project_warnings
-        CONAN_PKG::fmt CONAN_PKG::tl-optional
+        fmt::fmt tl::optional
         i3-ipc++::i3-ipc++
 )
 target_include_directories(mv_container
@@ -156,7 +154,7 @@ target_link_options(fix_workspaces PRIVATE)
 target_link_libraries(fix_workspaces
     PRIVATE
         project_warnings
-        CONAN_PKG::fmt CONAN_PKG::tl-optional
+        fmt::fmt tl::optional
         i3-ipc++::i3-ipc++
 )
 target_include_directories(fix_workspaces
@@ -178,7 +176,7 @@ target_link_options(exec PRIVATE)
 target_link_libraries(exec
     PRIVATE
         project_warnings
-        CONAN_PKG::fmt CONAN_PKG::tl-optional
+        fmt::fmt tl::optional
         i3-ipc++::i3-ipc++
 )
 target_include_directories(exec
@@ -193,10 +191,11 @@ enable_debug_log(exec)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                  update binaries in .config/i3/bin                   #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# get_target_property(bin exec RUNTIME_OUTPUT_DIRECTORY)
 add_custom_target(update
     COMMENT "Copying programs to '~/.config/i3/bin/' ..."
     COMMAND "${CMAKE_COMMAND}" -E copy_directory ~/.config/i3/bin/ ~/.config/i3/.bin_backup/
-    COMMAND "${CMAKE_COMMAND}" -E copy_directory bin/ ~/.config/i3/bin/
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" ~/.config/i3/bin/
     COMMAND strip ~/.config/i3/bin/*
 )
 add_dependencies(update mv_to_output focus_workspace focus_window mv_container fix_workspaces exec)

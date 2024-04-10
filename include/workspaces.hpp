@@ -8,6 +8,7 @@
 #ifndef I3_TOOLS_WORKSPACES_HPP
 #define I3_TOOLS_WORKSPACES_HPP
 
+#include <ranges>
 #include <algorithm>
 #include <tl/optional.hpp>
 #include <i3-ipc++/i3_ipc.hpp>
@@ -23,7 +24,7 @@ namespace brun
  * \param i3 The current i3 instance
  * \returns An optional containing the focused workspace, or an empty optional if it was not found
  * */
-[[nodiscard]]
+[[nodiscard]] inline
 auto focused_workspace(i3_ipc const & i3)
     -> tl::optional<i3_containers::workspace>
 try {
@@ -66,7 +67,7 @@ catch (std::exception const & exc) {
  * \returns An optional containing the visible but unfocused workspace, or an empty optional if it
  *          was found
  * */
-[[nodiscard]]
+[[nodiscard]] inline
 auto other_workspace(i3_ipc const & i3)
     -> tl::optional<i3_containers::workspace>
 try {
@@ -111,7 +112,7 @@ catch (std::exception const & exc) {
  * \param idx The workspace index
  * \returns An optional containing the node of the requested workspace
  * */
-[[nodiscard]]
+[[nodiscard]] inline
 auto get_workspace_node(i3_ipc const & i3, uint64_t id)
     -> tl::optional<i3_containers::node>
 {
@@ -135,7 +136,81 @@ auto get_workspace_node(i3_ipc const & i3, uint64_t id)
     return tl::nullopt;
 }
 
+/**
+ * Find the workspace given its node id
+ *
+ * \param i3 The current i3 instance
+ * \param idx The workspace index
+ * \returns An optional containing the required workspace
+ * */
+[[nodiscard]] inline
+auto get_workspace_from_node_id(i3_ipc const & i3, uint64_t id)
+    -> tl::optional<i3_containers::workspace>
+{
+    auto const workspaces = i3.get_workspaces();
+    for (auto const & ws : workspaces) {
+        if (ws.id == id) {
+            return ws;
+        }
+    }
+    return tl::nullopt;
+}
+
+
+namespace detail
+{
+struct recursive_result
+{
+    bool found;
+    std::optional<i3_containers::node> workspace_id;
+};
+
+[[nodiscard]] inline
+auto find_ws_by_mark_impl(i3_containers::node const & root, std::string_view const mark)
+    -> recursive_result
+{
+    if (std::ranges::find(root.marks, mark) != root.marks.end()) {
+        if (root.type == i3_containers::node_type::workspace) {
+            return { true, root };
+        }
+        return { true, std::nullopt };
+    }
+
+    for (auto const & node : root.nodes) {
+        auto [found, the_node] = find_ws_by_mark_impl(node, mark);
+        if (found) {
+            if (the_node.has_value()) {
+                return { true, std::move(the_node) };
+            }
+            if (root.type == i3_containers::node_type::workspace) {
+                return { true, root };
+            }
+            return { true, std::nullopt };
+        }
+    }
+
+    return { false, std::nullopt };
+}
+}  // namespace detail
+
+[[nodiscard]] inline
+auto find_ws_by_mark(i3_containers::node const & root, std::string_view const mark)
+    -> tl::optional<i3_containers::node>
+{
+    auto [found, node] = detail::find_ws_by_mark_impl(root, mark);
+    if (found) {
+        return { node.value() };
+    }
+    return tl::nullopt;
+}
+
+[[nodiscard]] inline
+auto find_ws_by_mark(i3_ipc const & i3, std::string_view const mark)
+    -> tl::optional<i3_containers::node>
+{
+    return find_ws_by_mark(i3.get_tree(), mark);
+}
+
 } // namespace brun
 
 #endif /* I3_TOOLS_WORKSPACES_HPP */
-

@@ -21,7 +21,7 @@ namespace brun
 
 namespace detail
 {
-[[nodiscard]]
+[[nodiscard]] inline
 auto focused_node_impl(i3_containers::node const & node)
     -> tl::optional<i3_containers::node>
 {
@@ -151,7 +151,7 @@ auto print_border(border x)
 namespace detail
 {
 /// \exclude
-[[nodiscard]]
+[[nodiscard]] inline
 auto node_on_border_impl(i3_containers::node const & node, border on_border)
     -> border
 {
@@ -218,8 +218,32 @@ auto node_on_border(i3_ipc const & i3)
     return detail::node_on_border_impl(i3.get_tree(), border::unique);
 }
 
+[[nodiscard]] inline
+auto find_node_by_mark(i3_containers::node const & node, std::string_view const mark)
+    -> tl::optional<i3_containers::node>
+{
+    if (std::ranges::find(node.marks, mark) != node.marks.end()) {
+        return node;
+    }
+
+    for (auto const & child : node.nodes) {
+        auto res = find_node_by_mark(child, mark);
+        if (res.has_value()) {
+            return res;
+        }
+    }
+
+    return tl::nullopt;
+}
+
+[[nodiscard]] inline
+auto find_node_by_mark(i3_ipc const & i3, std::string_view const mark)
+    -> tl::optional<i3_containers::node>
+{
+    return find_node_by_mark(i3.get_tree(), mark);
+}
+
 
 } // namespace brun
 
 #endif /* NODES_HPP */
-

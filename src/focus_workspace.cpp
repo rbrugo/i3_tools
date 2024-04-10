@@ -17,23 +17,36 @@
 #include "workspaces.hpp"
 #include "outputs.hpp"
 
-int main(int argc, char * argv[])
+auto get_target_ws(i3_ipc const & i3, std::string_view arg)
+    -> int64_t
+{
+    int n = -1;
+    // If it's a number, all good
+    auto const [ptr, ec] = std::from_chars(arg.data(), arg.data() + arg.length(), n);
+    if (ec == std::errc{}) {
+        return n;
+    }
+    // If it does start with "mark:", erase that part
+    if (arg.starts_with("mark:")) {
+        arg.remove_prefix(5);
+    }
+    // Check if it effectively is a mark
+    if (auto const & marks = i3.get_marks(); std::ranges::find(marks, arg) == marks.end()) {
+        fmt::print(stderr, "Argument passed ({}) is not a number nor a mark\n", arg);
+        std::exit(1);
+    }
+    return *brun::get_workspace_from_node_id(i3, brun::find_ws_by_mark(i3, arg).value().id)->num;
+}
+
+int main(int argc, char const * argv[])
 {
     if (argc != 2) {
-        fmt::print(stderr, "Usage: {} workspace_num\n", argv[0]);
+        fmt::print(stderr, "Usage: {} <workspace_num|mark> \n", argv[0]);
         return 255;
     }
-    auto const target_ws = [arg=argv[1]] {
-        int n = -1;
-        auto const [ptr, ec] = std::from_chars(arg, arg + std::strlen(arg), n);
-        if (ec != std::errc{}) {
-            fmt::print(stderr, "Argument passed is not a number\n");
-            std::exit(1);
-        }
-        return n;
-    }();
-
     auto const i3 = i3_ipc{std::getenv("I3SOCK")};
+    auto const target_ws = get_target_ws(i3, argv[1]);
+
     auto const monitors = brun::retrieve_output_names(i3);
     auto const current_ws = brun::focused_workspace_idx(i3).value_or(1);
     auto const other_focused_ws = brun::other_workspace_idx(i3).value_or(current_ws);

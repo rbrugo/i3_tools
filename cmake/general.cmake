@@ -103,3 +103,40 @@ if (${FORCE_COLORED_OUTPUT})
         add_compile_options(-fcolor-diagnostics)
     endif()
 endif()
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+#                         Copy compile commands                          #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# https://stackoverflow.com/a/60910583/7835355
+# Copy to source directory
+option (COPY_COMPILE_COMMANDS "Forcefully copy compile_commands.json in ./build/" TRUE)
+if (${COPY_COMPILE_COMMANDS})
+    add_custom_target(
+        copy-compile-commands ALL
+        DEPENDS
+            ${CMAKE_SOURCE_DIR}/build/compile_commands.json
+    )
+    add_custom_command(
+        OUTPUT ${CMAKE_SOURCE_DIR}/build/compile_commands.json
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${CMAKE_BINARY_DIR}/compile_commands.json
+            ${CMAKE_SOURCE_DIR}/build/compile_commands.json
+        DEPENDS
+            # Unlike "proper" targets like executables and libraries, 
+            # custom command / target pairs will not set up source
+            # file dependencies, so we need to list file explicitly here
+            generate-compile-commands
+            ${CMAKE_BINARY_DIR}/compile_commands.json
+    )
+
+    # Generate the compilation commands. Necessary so cmake knows where it came
+    # from and if for some reason you delete it.
+    add_custom_target(generate-compile-commands
+        DEPENDS
+            ${CMAKE_BINARY_DIR}/compile_commands.json
+    )
+    add_custom_command(
+        OUTPUT ${CMAKE_BINARY_DIR}/compile_commands.json
+        COMMAND ${CMAKE_COMMAND} -B${CMAKE_BINARY_DIR} -S${CMAKE_SOURCE_DIR}
+    )
+endif()

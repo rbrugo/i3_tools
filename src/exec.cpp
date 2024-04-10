@@ -50,7 +50,7 @@ int main(int argc, char const * argv[])
 
     using i3_containers::node_layout;
     auto const original_layout = focused_node.value().layout;
-    if (original_layout == rollbear::none_of(node_layout::splith, node_layout::splitv)) {
+    if (rollbear::none_of(node_layout::splith, node_layout::splitv) == original_layout) {
 #ifdef ENABLE_DEBUG
         fmt::print(stderr, "Don't want to split a stacked/tabbed/dockarea/output container\n");
 #endif // ENABLE_DEBUG
