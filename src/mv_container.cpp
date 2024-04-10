@@ -8,7 +8,6 @@
 #include <i3-ipc++/i3_ipc.hpp>
 #include <fmt/core.h>
 #include <charconv>
-#include <thread>
 
 #include "workspaces.hpp"
 #include "workspace_extra.hpp"
@@ -24,18 +23,36 @@
 // if target has exactly one child (= a new workspace has been created):
 //     fix target output
 
+auto get_target_ws(i3_ipc const & i3, std::string_view arg)
+    -> int64_t
+{
+    int n = -1;
+    // If it's a number, all good
+    auto const [ptr, ec] = std::from_chars(arg.data(), arg.data() + arg.length(), n);
+    if (ec == std::errc{}) {
+        return n;
+    }
+    // If it does start with "mark:", erase that part
+    if (arg.starts_with("mark:")) {
+        arg.remove_prefix(5);
+    }
+    // Check if it effectively is a mark
+    if (auto const & marks = i3.get_marks(); std::ranges::find(marks, arg) == marks.end()) {
+        fmt::print(stderr, "Argument passed ({}) is not a number nor a mark\n", arg);
+        std::exit(1);
+    }
+    return *brun::get_workspace_from_node_id(i3, brun::find_ws_by_mark(i3, arg).value().id)->num;
+}
+
 int main(int argc, char * argv[])
 {
     if (argc < 2 or argc > 3) {
-        fmt::print(stderr, "usage: {} <target-workspace-num> [--no-auto-back-and-forth]", argv[0]);
+        fmt::print(stderr, "usage: {} <target-workspace-num|mark> [--no-auto-back-and-forth]", argv[0]);
         return 0;
     }
     auto const i3 = i3_ipc{std::getenv("I3SOCK")};
 
-    auto target = brun::stoi(std::string_view{argv[1]}).or_else([] {
-        brun::log("Argument passed is not a number\n");
-        std::exit(0);
-    }).value();
+    auto target = get_target_ws(i3, argv[1]);
     auto const current = brun::focused_workspace_idx(i3).or_else([]{
         brun::log("No workspace focused\n");
         std::exit(0);
